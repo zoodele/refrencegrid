@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grid Tool</title>
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #003366;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background-color: #0077cc;
+      color: white;
+      padding: 30px 10px;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      max-width: 100%;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    label {
+      margin: 0 10px;
+    }
+
+    .toggle {
+      margin-top: 15px;
+    }
+
+    input[type="range"] {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Grid Tool</h1>
+    <p>Add adjustable grids to your reference images</p>
+  </header>
+
+  <main>
+    <input type="file" id="upload" accept="image/*"><br/>
+
+    <div class="controls">
+      <label>Cell Width: <span id="cellWidthVal">50</span>px</label>
+      <input type="range" id="cellWidth" min="10" max="200" value="50"/><br/>
+
+      <label>Cell Height: <span id="cellHeightVal">50</span>px</label>
+      <input type="range" id="cellHeight" min="10" max="200" value="50"/>
+    </div>
+
+    <div class="toggle">
+      <label>
+        <input type="checkbox" id="gridModeToggle">
+        Use Alternate Grid Mode
+      </label>
+    </div>
+
+    <canvas id="canvas"></canvas>
+  </main>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const cellWidthSlider = document.getElementById('cellWidth');
+    const cellHeightSlider = document.getElementById('cellHeight');
+    const cellWidthVal = document.getElementById('cellWidthVal');
+    const cellHeightVal = document.getElementById('cellHeightVal');
+    const gridModeToggle = document.getElementById('gridModeToggle');
+
+    let img = new Image();
+    let imageLoaded = false;
+
+    function drawGrid() {
+      if (!imageLoaded) return;
+
+      // Clear canvas and redraw image
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const cellWidth = parseInt(cellWidthSlider.value);
+      const cellHeight = parseInt(cellHeightSlider.value);
+
+      ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+      ctx.lineWidth = 1;
+
+      if (!gridModeToggle.checked) {
+        // 🟦 Default Grid Mode
+        for (let x = 0; x <= canvas.width; x += cellWidth) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y <= canvas.height; y += cellHeight) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+      } else {
+        // 🟥 Alternate Grid Mode (replace this with your own logic)
+        for (let x = 0; x <= canvas.width; x += cellWidth) {
+          for (let y = 0; y <= canvas.height; y += cellHeight) {
+            ctx.strokeRect(x, y, cellWidth, cellHeight);
+          }
+        }
+      }
+    }
+
+    upload.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        img.onload = function () {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          imageLoaded = true;
+          drawGrid();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    cellWidthSlider.addEventListener('input', () => {
+      cellWidthVal.textContent = cellWidthSlider.value;
+      drawGrid();
+    });
+
+    cellHeightSlider.addEventListener('input', () => {
+      cellHeightVal.textContent = cellHeightSlider.value;
+      drawGrid();
+    });
+
+    gridModeToggle.addEventListener('change', drawGrid);
+  </script>
+</body>
+</html>
